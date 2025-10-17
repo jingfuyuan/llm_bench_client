@@ -5,8 +5,8 @@ A comprehensive benchmarking suite for Large Language Models (LLMs), with specia
 ## Features
 
 - **Comprehensive Benchmarking**: Measures request latency, time-to-first-token (TTFT), tokens per second, and success rates
-- **Dataset Support**: Load datasets from Parquet files with configurable column mappings. Currently supports COCO caption dataset format
-- **System Monitoring**: Real-time CPU, memory, and GPU utilization tracking
+- **Dataset Support**: Load datasets from Parquet files with configurable column mappings. Currently supports COCO caption dataset.
+- **System Monitoring**: Real-time CPU, memory, and GPU utilization tracking. **Currently, GPU monitoring does not work.**
 - **Multiple Output Formats**: Results in JSON, CSV, HTML reports, and text summaries
 - **Flexible Configuration**: YAML-based configuration with validation
 - **Async Processing**: High-performance asynchronous request handling
@@ -29,10 +29,16 @@ For GPU monitoring capabilities, install the optional dependency:
 pip install py3nvml
 ```
 
+## Dataset for benchmarking VLMs
+This benchmark is designed to work with the COCO caption dataset stored in Parquet format. The dataset can be downloaded from huggingface.  
+Here is the link: [lmms-lab/COCO-Caption2017](https://huggingface.co/datasets/lmms-lab/COCO-Caption2017)
+
+
 ## Quick Start
 
 ### 1. Create Configuration (optional)
-You don't have to create a configuration file. The benchmark can run with default settings. You can modify `config/default_config.yaml` as needed.
+You don't have to create a configuration file. The benchmark can run with default settings. You can modify `config/default_config.yaml` as needed. 
+
 Create a configuration file for your setup:
 
 ```bash
@@ -77,6 +83,9 @@ python main.py preview --config my_config.yaml --index 0
 ```
 
 ### 4. Run Benchmark
+
+Ommitting the `--config` flag will use the default configuration file located at `config/default_config.yaml`. 
+`--samples` and `--batch-size` flags will override the corresponding values in the configuration file.
 
 Execute the benchmark:
 
