@@ -1,0 +1,84 @@
+# VLM Benchmarking Configuration
+# This file contains all configurable parameters for the benchmarking suite
+
+# Server Configuration
+server:
+  # Server URL (e.g., http://localhost:8000)
+  url: "http://localhost:8000"
+
+# Dataset Configuration
+dataset:
+  # Path to the parquet files directory
+  path: "/home/amd/workspace/vlm/coco_captions/data"
+  # Parquet file pattern (glob)
+  file_pattern: "val-00000-of-00013.parquet"
+  # Column names in the parquet files
+  columns:
+    image: "image"          # Column containing image bytes
+    prompt: "question"        # Column containing text prompts
+    metadata: "question_id"    # Column containing additional metadata
+  # Image format (if images need conversion)
+  image_format: "bytes"     # "bytes", "base64", "path"
+  custom_prompt: null    # Custom prompt template (if any)
+
+# Benchmarking Configuration
+benchmark:
+  model_name: "Qwen/Qwen2.5-VL-7B-Instruct"  # Model to benchmark
+  # Number of samples to test (0 = all samples)
+  num_samples: 100
+  # Maximum output tokens per request
+  max_tokens: 512
+  # Temperature for generation
+  temperature: 0.8
+  # Top-p sampling
+  top_p: 0.95
+  # Batch size for concurrent requests
+  batch_size: 1
+  # Request timeout in seconds
+  timeout: 120
+  # Number of retries for failed requests
+  max_retries: 3
+  # Delay between batches (seconds)
+  batch_delay: 0
+  # Warmup requests before actual benchmarking
+  warmup_requests: 10
+
+# Output Configuration
+output:
+  # Results directory
+  results_dir: "./results"
+  # Result file formats
+  formats:
+    - "json"
+    - "csv"
+    - "html"
+  # Include raw responses in output
+  include_responses: true
+  # Include performance metrics
+  include_metrics: true
+  # Include system resource usage
+  include_system_metrics: true
+
+# Monitoring Configuration
+monitoring:
+  # Enable system resource monitoring
+  enabled: true
+  # Monitoring interval in seconds
+  interval: 1.0
+  # Metrics to collect
+  metrics:
+    - "cpu_percent"
+    - "memory_percent" 
+    - "gpu_utilization"
+    - "gpu_memory"
+
+# Logging Configuration
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR
+  level: "INFO"
+  # Log file path
+  file: "./logs/benchmark.log"
+  # Console output
+  console: true
+  # Log format
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
