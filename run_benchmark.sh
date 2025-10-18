@@ -16,7 +16,7 @@ n_parallel="4"
 # start the llama.cpp server in the background
 echo "Starting LLaMA server..."
 $llama_server --model "$model_path" --mmproj "$mmproject_path" --host "$host" --port "$port" \
-    -c 8192 --parallel "$n_parallel" -fa "on" &
+    -c 8192 --parallel "$n_parallel" -fa "on" > /dev/null 2>&1 &
 server_pid=$!
 echo "LLaMA server started with PID $server_pid"
 
