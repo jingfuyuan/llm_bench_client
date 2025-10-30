@@ -31,7 +31,7 @@ pip install py3nvml
 
 ## Dataset for benchmarking VLMs
 This benchmark is designed to work with the COCO caption dataset stored in Parquet format. The dataset can be downloaded from huggingface.  
-Here is the link: [lmms-lab/COCO-Caption2017](https://huggingface.co/datasets/lmms-lab/COCO-Caption2017)
+Here is the link: [lmms-lab/COCO-Caption](https://huggingface.co/datasets/lmms-lab/COCO-Caption)
 
 
 ## Quick Start
