@@ -103,8 +103,8 @@ async def run_benchmark(config_path: Optional[str] = None,
         
         # Initialize dataset loader to validate dataset
         dataset_loader = DatasetLoader(config)
-        dataset_info = dataset_loader.get_dataset_info()
-        logger.info(f"Dataset loaded: {dataset_info['total_samples']} samples from {dataset_info['num_files']} files")
+        # dataset_info = dataset_loader.get_dataset_info()
+        # logger.info(f"Dataset loaded: {dataset_info['total_samples']} samples from {dataset_info['num_files']} files")
         
         # Initialize benchmark client
         benchmark_client = BenchmarkClient(config)

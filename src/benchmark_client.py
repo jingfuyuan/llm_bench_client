@@ -76,6 +76,7 @@ class BenchmarkClient:
         # Benchmark configuration
         self.model_name = config.get('benchmark.model_name', 'vision-language-model')
         self.max_tokens = config.get('benchmark.max_tokens', 512)
+        self.output_length = config.get('dataset.output_length', 128)
         self.temperature = config.get('benchmark.temperature', 0.8)
         self.top_p = config.get('benchmark.top_p', 0.95)
         self.timeout = config.get('benchmark.timeout', 120)
@@ -231,18 +232,10 @@ class BenchmarkClient:
             "messages": [
                 {
                     "role": "user",
-                    "content": [
-                        {"type": "text", "text": sample['prompt']},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{sample['image_base64']}"
-                            }
-                        }
-                    ]
+                    "content": sample['prompt']
                 }
             ],
-            "max_tokens": self.max_tokens,
+            "max_tokens": self.output_length,
             "temperature": self.temperature,
             "top_p": self.top_p,
             "stream": True,  # We'll use streaming to measure time to first token
@@ -320,8 +313,8 @@ class BenchmarkClient:
                     request_id=request_id,
                     timestamp_begin=timestamp_begin,
                     timestamp_end=time.time(),
-                    question_id=str(sample.get('metadata', '')),
-                    image_dimensions=(sample.get('image_width', 0), sample.get('image_height', 0)),
+                    question_id=sample['prompt_id'],
+                    image_dimensions=None,
                     prompt=sample['prompt'],
                     image_processing_time=image_processing_time,
                     time_to_first_token=time_to_first_token,
@@ -331,7 +324,7 @@ class BenchmarkClient:
                     prompt_tokens=prompt_tokens,
                     completion_tokens=completion_tokens,
                     success=True,
-                    true_answer=sample['answer'],
+                    true_answer=None,
                     response_text=response_text,
                     server_response=server_response
                 )
@@ -351,8 +344,8 @@ class BenchmarkClient:
                 request_id=request_id,
                 timestamp_begin=timestamp_begin,
                 timestamp_end=time.time(),
-                question_id=str(sample.get('metadata', '')),
-                image_dimensions=(sample.get('image_width', 0), sample.get('image_height', 0)),
+                question_id=sample['prompt_id'],
+                image_dimensions=None,
                 prompt=sample['prompt'],
                 image_processing_time=0,
                 time_to_first_token=0,

@@ -8,6 +8,7 @@ from typing import List, Dict, Any, Iterator, Optional, Tuple
 import pandas as pd
 from PIL import Image
 import logging
+import json
 
 from .config import Config
 
@@ -28,13 +29,10 @@ class DatasetLoader:
         self.config = config
         self.logger = logging.getLogger(__name__)
         
+        self.data_name = config.get('dataset.name', None)
         self.dataset_path = config.get('dataset.path')
-        self.file_pattern = config.get('dataset.file_pattern', '*.parquet')
-        self.columns = config.get('dataset.columns', {})
-        self.image_format = config.get('dataset.image_format', 'bytes')
-        
-        self._validate_dataset_path()
-        self._validate_image_format()
+        self.input_length = config.get('dataset.input_length', 128)
+        self.data_file = os.path.join(self.dataset_path, f"prompts_{self.input_length}.txt")
     
     def _validate_dataset_path(self):
         """Validate that dataset path exists and is accessible."""
@@ -108,55 +106,18 @@ class DatasetLoader:
             ValueError: If no data is loaded or dataset is invalid
             Exception: If parquet files cannot be read
         """
-        files = self.get_parquet_files()
+        data = []
+        sample_count = 0
+        with open(self.data_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                data.append(json.loads(line.strip()))
+                sample_count += 1
+                if sample_count >= num_samples:
+                    break
         
-        # Load data from all parquet files
-        dataframes = []
-        total_loaded = 0
-        
-        for file_path in files:
-            if num_samples and total_loaded >= num_samples:
-                break
-            
-            try:
-                self.logger.info(f"Loading {file_path}")
-                df = pd.read_parquet(file_path)
-                
-                if df.empty:
-                    self.logger.warning(f"Parquet file is empty: {file_path}")
-                    continue
-                
-                if num_samples:
-                    remaining = num_samples - total_loaded
-                    if len(df) > remaining:
-                        df = df.head(remaining)
-                
-                dataframes.append(df)
-                total_loaded += len(df)
-                
-            except Exception as e:
-                self.logger.error(f"Failed to load parquet file {file_path}: {e}")
-                # Continue with other files instead of failing completely
-                continue
-        
-        if not dataframes:
-            raise ValueError("No data loaded from parquet files")
-        
-        try:
-            # Combine all dataframes
-            dataset = pd.concat(dataframes, ignore_index=True)
-            
-            self.logger.info(f"Loaded {len(dataset)} samples from {len(dataframes)} files")
-            
-            # Validate required columns
-            self._validate_columns(dataset)
-            
-            return dataset
-            
-        except Exception as e:
-            self.logger.error(f"Error combining datasets: {e}")
-            raise ValueError(f"Failed to combine datasets: {e}")
-    
+        df = pd.DataFrame(data)
+        return df
+
     def _validate_columns(self, df: pd.DataFrame):
         """Validate that required columns exist in the dataset.
         
@@ -196,48 +157,14 @@ class DatasetLoader:
         Raises:
             ValueError: If dataset cannot be loaded or processed
         """
-        try:
-            dataset = self.load_dataset(num_samples)
-            
-            image_col = self.columns.get('image', 'image')
-            prompt_col = self.columns.get('prompt', 'prompt')
-            metadata_col = self.columns.get('metadata', 'metadata')
-            custom_prompt = self.config.get("dataset.custom_prompt", None)
-            
-            for idx, row in dataset.iterrows():
-                try:
-                    # Extract image data based on format
-                    if self.image_format == 'bytes':
-                        image_data = row[image_col].get("bytes") if isinstance(row[image_col], dict) else row[image_col]
-                    else:
-                        image_data = row[image_col]
-                    
-                    sample = {
-                        'index': int(idx),
-                        'image_data': image_data,
-                        'prompt': custom_prompt if custom_prompt else str(row[prompt_col]),
-                        'metadata': row.get(metadata_col, {}) if metadata_col in dataset.columns else {},
-                        "image_width": int(row.get("width", 0)),
-                        "image_height": int(row.get("height", 0)),
-                        "answer": str(row.get("answer", "")) if "answer" in row else None
-                    }
-                    
-                    # Process image data
-                    try:
-                        sample['image_base64'] = self._process_image(sample['image_data'])
-                    except Exception as e:
-                        self.logger.error(f"Failed to process image for sample {idx}: {e}")
-                        continue  # Skip this sample
-                    
-                    yield sample
-                    
-                except Exception as e:
-                    self.logger.error(f"Error processing sample {idx}: {e}")
-                    continue  # Skip this sample and continue with the next
-                    
-        except Exception as e:
-            self.logger.error(f"Error iterating samples: {e}")
-            raise
+        dataset = self.load_dataset(num_samples)
+        for idx, row in dataset.iterrows():
+            sample = {
+                "prompt_id": int(row["id"]),
+                "prompt": row["text"]
+            }
+            yield sample
+
     
     def _process_image(self, image_data: Any) -> str:
         """Process image data and convert to base64.

@@ -20,7 +20,7 @@ class Config:
         
         self.config_path = Path(config_path)
         self.config = self._load_config()
-        self._validate_config()
+        # self._validate_config()
     
     def _find_default_config(self) -> str:
         """Find the default configuration file."""

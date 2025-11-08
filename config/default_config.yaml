@@ -8,22 +8,16 @@ server:
 
 # Dataset Configuration
 dataset:
+  name: "wikipedia"
   # Path to the parquet files directory
-  path: "/home/amd/workspace/vlm/coco_captions/data"
-  # Parquet file pattern (glob)
-  file_pattern: "val-00000-of-00013.parquet"
-  # Column names in the parquet files
-  columns:
-    image: "image"          # Column containing image bytes
-    prompt: "question"        # Column containing text prompts
-    metadata: "question_id"    # Column containing additional metadata
-  # Image format (if images need conversion)
-  image_format: "bytes"     # "bytes", "base64", "path"
-  custom_prompt: null    # Custom prompt template (if any)
+  path: "/home/amd/dataset/wikipedia/prompts"
+  input_lenth: 128   # choose from 64, 128, 256, 512, 1024
+  output_lenght: 128
+
 
 # Benchmarking Configuration
 benchmark:
-  model_name: "Qwen/Qwen2.5-VL-7B-Instruct"  # Model to benchmark
+  model_name: "DeepSeek-R1"  # Model to benchmark
   # Number of samples to test (0 = all samples)
   num_samples: 100
   # Maximum output tokens per request
