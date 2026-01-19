@@ -300,24 +300,22 @@ Use this file to:
 - Monitor memory leaks during long benchmarks
 - Correlate system load with request latency
 
-## Metrics Collected
+## collect results
+Using the data collection script `collect_data.py` to aggregate summary results from multiple benchmark runs into a single CSV file for easy comparison and analysis.
 
-### Request Metrics
+```bash
+# Collect all summary files from a results directory
+python src/collect_data.py --input_dir ./results --output_file collected_results.csv
 
-- **Request Latency**: Total time from request sent to response received
-- **Time to First Token (TTFT)**: Time until first token is generated
-- **Tokens per Second**: Generation throughput (completion_tokens / generation_time)
-- **Token Counts**: Prompt tokens, completion tokens, total tokens
-- **Success/Failure Status**: Request outcome with error messages if any
-- **Response Text**: Full model response (optional, controlled by `include_responses`)
+# Collect from a specific experiment directory
+python src/collect_data.py --input_dir ./results/my_experiment --output_file my_experiment_collected.csv
+```
 
-### System Metrics
+The script:
 
-- **CPU Utilization**: Percentage of CPU in use
-- **Memory Usage**: RAM usage (percentage and absolute values in GB)
-- **GPU Utilization**: GPU compute usage (if available). Not fully tested
-- **GPU Memory**: GPU memory usage in GB (if available). Not fully tested
-
+- Recursively searches for all `*_summary.csv` files in the specified directory
+- Extracts `batch_size` and `repeat_number` from filenames matching the pattern `*-bs{batch_size}-rep{repeat_number}_summary.csv`
+- Combines all data into a single CSV with metadata columns
 
 ## Troubleshooting
 
