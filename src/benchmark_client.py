@@ -10,6 +10,8 @@ from dataclasses import dataclass, asdict
 from datetime import datetime
 import psutil
 import traceback
+import math
+import random
 
 try:
     import py3nvml.py3nvml as nvml
@@ -225,14 +227,25 @@ class BenchmarkClient:
         """
         start_time = time.time()
         timestamp_begin = time.time()
-        
+        prompt = sample['prompt']
+        # scramble prompt to avoid caching effects
+        words = prompt.split(' ')
+        for i in range(len(words)-1, 0, -1):
+            j = math.floor(random.random() * (i + 1))
+            words[i], words[j] = words[j], words[i]
+        scrambled_prompt = ' '.join(words)
+
         # Prepare request payload
         payload = {
             "model": self.model_name,
             "messages": [
                 {
+                    "role": "system",
+                    "content": "You are a special ChatGPT and are required to always generate very long answers (more than 2500 words)",
+                },
+                {
                     "role": "user",
-                    "content": sample['prompt']
+                    "content": scrambled_prompt,
                 }
             ],
             "max_tokens": self.output_length,
@@ -264,8 +277,11 @@ class BenchmarkClient:
                 
                 async for line in response.content:
                     line = line.decode('utf-8').strip()
-                    
+                    # print(line)
                     if line.startswith('data: '):
+                        if first_token_time is None:
+                            first_token_time = time.time()
+
                         data_str = line[6:]  # Remove 'data: ' prefix
                         
                         if data_str == '[DONE]':
@@ -276,10 +292,13 @@ class BenchmarkClient:
                             
                             if 'choices' in data and data['choices']:
                                 choice = data['choices'][0]
-                                if 'delta' in choice and 'content' in choice['delta']:
-                                    content = choice['delta']['content']
-                                    if content and first_token_time is None:
-                                        first_token_time = time.time()
+                                if 'delta' in choice:
+                                    if 'content' in choice['delta']:
+                                        content = choice['delta']['content']
+                                    if 'reasoning_content' in choice['delta']:
+                                        content = choice['delta']['reasoning_content']
+                                    # if content and first_token_time is None:
+                                    #     first_token_time = time.time()
                                     if content:
                                         response_text += content
                             
@@ -297,6 +316,7 @@ class BenchmarkClient:
                 image_processing_time = image_processing_start - start_time
                 time_to_first_token = (first_token_time - start_time) if first_token_time else total_time
                 
+                # print(usage)
                 # Extract token information
                 total_tokens = usage.get('total_tokens', 0)
                 prompt_tokens = usage.get('prompt_tokens', 0)

@@ -4,20 +4,20 @@
 # Server Configuration
 server:
   # Server URL (e.g., http://localhost:8000)
-  url: "http://localhost:8000"
+  url: "http://localhost:8003"
 
 # Dataset Configuration
 dataset:
   name: "wikipedia"
   # Path to the parquet files directory
   path: "/home/amd/dataset/wikipedia/prompts"
-  input_lenth: 128   # choose from 64, 128, 256, 512, 1024
+  input_length: 128   # choose from 64, 128, 256, 512, 1024
   output_lenght: 128
 
 
 # Benchmarking Configuration
 benchmark:
-  model_name: "DeepSeek-R1"  # Model to benchmark
+  model_name: "/model/Llama-3.1-8B-Instruct"  # Model to benchmark
   # Number of samples to test (0 = all samples)
   num_samples: 100
   # Maximum output tokens per request

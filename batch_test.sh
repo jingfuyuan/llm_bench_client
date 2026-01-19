@@ -5,22 +5,22 @@
 # Check the config/default_config.yaml for server URL and other configurations.
 # Activate the virtual environment if needed
 
-model_name="qwen2.5-vl-7b"
-engine="vllm"
-output_dir="results/Turin-128C"
-test_name="10242025-${model_name}-${engine}"
-results_file_prefix="10242025-${model_name}"
+model_name="llama-3.1-8B-Instruct"
+engine="vllm.aim"
+output_dir="results/Turin-128C-vllm-zentorch-112125"
+test_name="11212025-${model_name}-${engine}"
+results_file_prefix="112012025-${model_name}"
 
 # run the benchmark client
 echo "Running benchmark client..."
-n_samples=2000
+n_samples=128
 
 results_dir="${output_dir}/${test_name}"
 if [ ! -d "$results_dir" ]; then
     mkdir -p "$results_dir"
 fi
 
-for bs in 1 2 4 8 16; do
+for bs in 1 2 4 8; do
     for rep in 1; do
         output_name="${results_file_prefix}-bs${bs}-rep${rep}"
         python main.py run --samples $n_samples --batch-size $bs --output $output_name
@@ -29,3 +29,6 @@ for bs in 1 2 4 8 16; do
         mv ./results/${output_name}* "${results_dir}/"
     done
 done
+
+# copy this script to the results directory for future reference
+cp batch_test.sh "${results_dir}/"
